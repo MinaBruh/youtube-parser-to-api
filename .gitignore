@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.*
+coverage/
+.DS_Store
+Thumbs.db
+*.log
+tools/yt_dlp_vendor/
+.tmp-subs/

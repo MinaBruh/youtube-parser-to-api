@@ -1,0 +1,12 @@
+﻿.git
+.gitignore
+.DS_Store
+Thumbs.db
+node_modules
+**/node_modules
+coverage
+dist
+**/dist
+var
+.tmp-*
+tools/yt_dlp_vendor

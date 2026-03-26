@@ -1,0 +1,67 @@
+﻿name: ytpa
+
+services:
+  valkey:
+    image: valkey/valkey:8-alpine
+    restart: unless-stopped
+    ports:
+      - "${VALKEY_PORT:-6379}:6379"
+    volumes:
+      - valkey-data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      API_PORT: 3000
+      MEDIA_PORT: 3001
+      VALKEY_URL: redis://valkey:6379
+    depends_on:
+      valkey:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-3000}:3000"
+
+  media:
+    build:
+      context: .
+      dockerfile: services/media/Dockerfile
+    restart: unless-stopped
+    environment:
+      MEDIA_PORT: 3001
+      VALKEY_URL: redis://valkey:6379
+      MEDIA_DISK_CACHE_DIR: /app/var/media-cache
+    depends_on:
+      valkey:
+        condition: service_healthy
+    ports:
+      - "${MEDIA_PORT:-3001}:3001"
+    volumes:
+      - ./var/media-cache:/app/var/media-cache
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    environment:
+      WEB_PORT: 4173
+      API_ORIGIN: http://api:3000
+      MEDIA_ORIGIN: http://media:3001
+    depends_on:
+      api:
+        condition: service_started
+      media:
+        condition: service_started
+    ports:
+      - "${WEB_PORT:-8080}:4173"
+
+volumes:
+  valkey-data:

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YouTube Proxy API Debug Deck</title>
+    <link rel="stylesheet" href="/debug/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="masthead panel panel-lifted">
+        <div class="brand-block">
+          <div class="brand-mark">
+            <span class="brand-mark__you">Tube</span>
+            <span class="brand-mark__proxy">Proxy</span>
+          </div>
+          <div>
+            <p class="kicker">Debug Deck</p>
+            <h1>Old-school manual UX lab</h1>
+            <p class="masthead-copy">
+              Quick search, playlist browsing and direct playback on top of the reverse-engineered API.
+            </p>
+          </div>
+        </div>
+
+        <form id="search-form" class="search-bar" autocomplete="off">
+          <label class="field field-grow">
+            <span class="field-label">Search</span>
+            <input id="search-query" name="query" type="search" placeholder="Try openai, music, trailers..." required />
+          </label>
+
+          <label class="field field-compact">
+            <span class="field-label">Type</span>
+            <select id="search-type" name="type">
+              <option value="video">Video</option>
+              <option value="all">All</option>
+              <option value="playlist">Playlist</option>
+              <option value="channel">Channel</option>
+              <option value="shorts">Shorts</option>
+              <option value="movie">Movie</option>
+            </select>
+          </label>
+
+          <label class="field field-mini">
+            <span class="field-label">Limit</span>
+            <input id="search-limit" name="limit" type="number" min="1" max="24" value="12" />
+          </label>
+
+          <button class="button button-primary" type="submit">Search</button>
+        </form>
+
+        <div class="status-strip">
+          <div id="status-indicator" class="status-chip" data-tone="idle">Idle</div>
+          <p id="status-text">Frontend ready. Load a playlist or search for a video.</p>
+        </div>
+      </header>
+
+      <section class="utility-grid panel">
+        <div class="utility-cell">
+          <p class="utility-title">Direct Video</p>
+          <form id="video-form" class="inline-form">
+            <input id="video-id-input" type="text" placeholder="dQw4w9WgXcQ" />
+            <button class="button" type="submit">Open Video</button>
+          </form>
+        </div>
+
+        <div class="utility-cell">
+          <p class="utility-title">Direct Playlist</p>
+          <form id="playlist-form" class="inline-form">
+            <input id="playlist-id-input" type="text" placeholder="UUXZCJLdBC09xxGZ6gcdrc6A" />
+            <button class="button" type="submit">Open Playlist</button>
+          </form>
+        </div>
+
+        <div class="utility-cell">
+          <p class="utility-title">Direct Channel</p>
+          <form id="channel-form" class="inline-form">
+            <input id="channel-id-input" type="text" placeholder="UCXZCJLdBC09xxGZ6gcdrc6A" />
+            <button class="button" type="submit">Open Channel</button>
+          </form>
+        </div>
+      </section>
+
+      <main class="layout-grid">
+        <section class="watch-column">
+          <article class="panel panel-lifted watch-stage">
+            <div class="panel-head">
+              <h2>Playback Bench</h2>
+              <p>Simple muxed-stream player for manual QA</p>
+            </div>
+
+            <div class="player-shell">
+              <video id="player" class="player" controls playsinline preload="metadata"></video>
+              <div id="player-overlay" class="player-overlay is-visible">
+                <p class="player-overlay__eyebrow">Ready for a source</p>
+                <h3>Select a video, playlist item or search result</h3>
+                <p>
+                  The simple player prefers muxed MP4/WebM streams. If a video only has split audio/video tracks,
+                  the UI will tell you instead of pretending playback works.
+                </p>
+              </div>
+            </div>
+
+            <div id="stream-pill-row" class="stream-pill-row"></div>
+          </article>
+
+          <article class="panel video-panel">
+            <div class="panel-head">
+              <h2>Video Details</h2>
+              <p>Metadata from <code>/v1/videos/:id</code> and playback contract</p>
+            </div>
+
+            <div id="video-meta" class="video-meta empty-state">
+              <p>No video selected yet.</p>
+            </div>
+          </article>
+
+          <article class="panel playlist-panel">
+            <div class="panel-head">
+              <h2>Playlist Queue</h2>
+              <p>Current playlist preview with first-page items</p>
+            </div>
+
+            <div id="playlist-meta" class="playlist-meta empty-state">
+              <p>No playlist loaded yet.</p>
+            </div>
+
+            <div id="playlist-items" class="playlist-items"></div>
+          </article>
+        </section>
+
+        <aside class="rail-column">
+          <article class="panel results-panel">
+            <div class="panel-head">
+              <h2>Search Results</h2>
+              <p>Quick launcher for videos, playlists and channels</p>
+            </div>
+
+            <div id="results-summary" class="results-summary">No search performed yet.</div>
+            <div id="search-results" class="result-list empty-state">
+              <p>Use the search bar above to populate this rail.</p>
+            </div>
+          </article>
+
+          <article class="panel related-panel">
+            <div class="panel-head">
+              <h2>Watch Next</h2>
+              <p>Related rail from <code>/v1/videos/:id/related</code></p>
+            </div>
+
+            <div id="related-summary" class="results-summary">Open a video to load related content.</div>
+            <div id="related-items" class="result-list empty-state">
+              <p>Related recommendations will appear here once a video is active.</p>
+            </div>
+          </article>
+
+          <article class="panel channel-panel">
+            <div class="panel-head">
+              <h2>Channel Card</h2>
+              <p>Side panel for the active owner or manually opened channel</p>
+            </div>
+
+            <div id="channel-card" class="channel-card empty-state">
+              <p>No channel selected yet.</p>
+            </div>
+          </article>
+        </aside>
+      </main>
+    </div>
+
+    <script src="/debug/app.js" defer></script>
+  </body>
+</html>
+
